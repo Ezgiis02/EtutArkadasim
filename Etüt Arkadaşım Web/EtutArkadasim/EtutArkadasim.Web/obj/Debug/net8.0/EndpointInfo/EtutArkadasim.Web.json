@@ -1,0 +1,223 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "EtutArkadasim.Web",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/Courses/addsamples": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Courses/getall": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Courses/getmycourses": {
+      "get": {
+        "tags": [
+          "Courses"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Courses/add/{courseId}": {
+      "post": {
+        "tags": [
+          "Courses"
+        ],
+        "parameters": [
+          {
+            "name": "courseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/rating/rate": {
+      "post": {
+        "tags": [
+          "Rating"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingViewModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingViewModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RatingViewModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/request/send/{receiverId}": {
+      "post": {
+        "tags": [
+          "StudyRequest"
+        ],
+        "parameters": [
+          {
+            "name": "receiverId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/request/pending": {
+      "get": {
+        "tags": [
+          "StudyRequest"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/request/accept/{requestId}": {
+      "post": {
+        "tags": [
+          "StudyRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/request/reject/{requestId}": {
+      "post": {
+        "tags": [
+          "StudyRequest"
+        ],
+        "parameters": [
+          {
+            "name": "requestId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/request/myfriends": {
+      "get": {
+        "tags": [
+          "StudyRequest"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RatingViewModel": {
+        "required": [
+          "ratedUserId",
+          "score"
+        ],
+        "type": "object",
+        "properties": {
+          "ratedUserId": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "score": {
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Courses"
+    },
+    {
+      "name": "Rating"
+    },
+    {
+      "name": "StudyRequest"
+    }
+  ]
+}

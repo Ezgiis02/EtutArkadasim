@@ -1,0 +1,85 @@
+/* Bu dosya, bootstrap.min.css'den SONRA yüklenir, 
+  bu nedenle buradaki kurallar varsayýlan stilleri ezer.
+*/
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+/* GÜNCELLENDÝ (Req 4) - Güzel Arka Plan */
+body {
+    margin-bottom: 60px; /* Footer yüksekliði */
+    /* Ana tema rengimizle (#663399) uyumlu çok açýk bir mor tonu */
+    background: linear-gradient(180deg, #f8f0ff 0%, #ffffff 50%);
+    background-attachment: fixed; /* Sayfa kaysa bile gradient sabit kalsýn */
+}
+
+/* Footer'ýn da (yeni arka plan üzerinde) temiz/beyaz görünmesini saðlýyoruz */
+footer.footer {
+    background-color: #ffffff;
+}
+
+
+/* --- (7. Hafta - Renk Uyumu) --- */
+
+/* Bootstrap'in varsayýlan MAVÝ rengini MOR ile eziyoruz */
+:root {
+    --bs-primary: #663399; /* Ana Mor Rengimiz */
+    --bs-primary-rgb: 102, 51, 153;
+    --bs-link-color: #663399; /* Linklerin rengi */
+    --bs-link-hover-color: #4a2570; /* Linklerin üzerine gelince */
+}
+
+/* Ana Buton (Mor Dolgulu) */
+.btn-primary {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #663399;
+    --bs-btn-border-color: #663399;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #552b80;
+    --bs-btn-hover-border-color: #4a2570;
+    --bs-btn-active-bg: #4a2570;
+    --bs-btn-active-border-color: #4a2570;
+    --bs-btn-disabled-bg: #663399;
+    --bs-btn-disabled-border-color: #663399;
+}
+
+/* Çerçeveli (Outlined) Buton (Kayýt Ol butonu için) */
+.btn-outline-primary {
+    --bs-btn-color: #663399;
+    --bs-btn-border-color: #663399;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #663399;
+    --bs-btn-hover-border-color: #663399;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #663399;
+    --bs-btn-active-border-color: #663399;
+    --bs-btn-disabled-color: #663399;
+    --bs-btn-disabled-border-color: #663399;
+}
+
+/* Ana logonun da bu rengi almasýný saðlýyoruz */
+.navbar-brand .bi {
+    color: var(--bs-primary) !important;
+}
+
+/* Kartlara hafif bir gölge ve hover efekti ekleyelim */
+.card {
+    transition: all 0.2s ease-in-out;
+}
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+    }

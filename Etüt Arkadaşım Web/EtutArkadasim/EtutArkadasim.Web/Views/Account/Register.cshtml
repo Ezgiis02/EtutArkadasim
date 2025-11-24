@@ -1,0 +1,62 @@
+﻿@model EtutArkadasim.Web.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Kayıt Ol";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <section>
+            <form asp-action="Register" method="post">
+                <h4>Yeni bir hesap oluşturun.</h4>
+                <hr />
+
+                <!-- asp-validation-summary: Model'deki genel hataları (veya tüm hataları)
+                     burada listeler. All = Tüm hatalar, ModelOnly = Genel hatalar -->
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+                <!-- Ad Soyad Alanı -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Name" class="form-control" placeholder="Adınız Soyadınız" />
+                    <label asp-for="Name"></label>
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <!-- E-posta Alanı -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Email" class="form-control" placeholder="eposta@adres.com" />
+                    <label asp-for="Email"></label>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <!-- Şifre Alanı -->
+                <div class="form-floating mb-3">
+                    <input asp-for="Password" class="form-control" type="password" placeholder="Şifre" />
+                    <label asp-for="Password"></label>
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <!-- Şifre Tekrar Alanı -->
+                <div class="form-floating mb-3">
+                    <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Şifre (Tekrar)" />
+                    <label asp-for="ConfirmPassword"></label>
+                    <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                </div>
+
+                <!-- Kayıt Ol Butonu -->
+                <div class="mb-3">
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Kayıt Ol</button>
+                </div>
+
+            </form>
+        </section>
+    </div>
+</div>
+
+<!-- Bu bölüm, istemci tarafı (JavaScript) doğrulamalarını etkinleştirmek için gereklidir -->
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

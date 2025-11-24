@@ -1,0 +1,113 @@
+﻿@* Controller'dan 'List<User>' modelini yolladığımız için, modelimizi burada tanımlıyoruz *@
+@model List<EtutArkadasim.Web.Models.User>
+@{
+    ViewData["Title"] = "Arkadaş Bul";
+}
+
+<div class="container">
+    <div class="text-center mb-4">
+        <h2><i class="bi bi-people-fill"></i> @ViewData["Title"]</h2>
+        <p class="lead">Platformdaki diğer mühendislik öğrencilerini bulun.</p>
+    </div>
+
+    <!-- Kullanıcı Kartları -->
+    <div class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12">
+                <div class="alert alert-info text-center" role="alert">
+                    Görünüşe göre platformda sizden başka kimse yok.
+                </div>
+            </div>
+        }
+        else
+        {
+            @foreach (var user in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+
+                            <!-- GÜNCELLENDİ (Req 4): Profil Fotoğrafı -->
+                            <img src="@(string.IsNullOrEmpty(user.ProfileImageUrl) ? $"https://placehold.co/100x100/663399/FFFFFF?text={user.Name.Substring(0, 1)}" : user.ProfileImageUrl)"
+                                 class="rounded-circle mb-3"
+                                 alt="@user.Name"
+                                 style="width:100px; height:100px; object-fit: cover;"
+                                 onerror="this.src='https://placehold.co/100x100/663399/FFFFFF?text=?'">
+
+                            <h5 class="card-title">@user.Name</h5>
+                            <p class="card-text text-muted">
+                                <i class="bi bi-star-fill text-warning"></i>
+                                @user.AverageRating.ToString("F1") / 5.0
+                            </p>
+
+                            <button class="btn btn-primary"
+                                    data-receiver-id="@user.Id"
+                                    data-receiver-name="@user.Name"
+                                    onclick="sendRequest(this)">
+                                <i class="bi bi-person-check"></i> Talep Gönder
+                            </button>
+                            <div class="form-text mt-2" id="request-message-@user.Id" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        }
+    </div>
+
+@section Scripts {
+        <script>
+            // KULLANICIYA TALEP GÖNDER
+            // API Endpoint: [POST] /api/request/send/{receiverId}
+            async function sendRequest(buttonElement) {
+                const receiverId = buttonElement.dataset.receiverId;
+                const receiverName = buttonElement.dataset.receiverName;
+                const messageDiv = document.getElementById(`request-message-${receiverId}`);
+
+                // Butonu geçici olarak devre dışı bırak
+                buttonElement.disabled = true;
+                buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Gönderiliyor...';
+
+                try {
+                    // 1. API'ya POST isteği at
+                    const response = await fetch(`/api/request/send/${receiverId}`, {
+                        method: 'POST',
+                        headers: {
+                            // AntiForgeryToken (CSRF) koruması
+                            // API'miz [Authorize] ile korunduğu için şimdilik güvende
+                        }
+                    });
+
+                    // 2. API'dan dönen JSON yanıtını al
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        // API 400 (BadRequest) veya 404 (NotFound) döndürdüyse
+                        throw new Error(result.message || 'Bir hata oluştu.');
+                    }
+
+                    // 3. Başarılı ise
+                    buttonElement.innerHTML = '<i class="bi bi-check-lg"></i> Talep Gönderildi';
+                    buttonElement.classList.remove('btn-primary');
+                    buttonElement.classList.add('btn-success');
+
+                    messageDiv.textContent = result.message; // "Arkadaşlık talebi başarıyla gönderildi."
+                    messageDiv.className = 'form-text mt-2 text-success';
+                    messageDiv.style.display = 'block';
+
+                } catch (error) {
+                    // 4. Hata oluşursa
+                    console.error('Talep gönderilirken hata:', error);
+
+                    // Butonu eski haline getir
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = '<i class="bi bi-person-check"></i> Talep Gönder';
+
+                    messageDiv.textContent = error.message; // API'dan gelen hata mesajı (örn: "Zaten beklemede...")
+                    messageDiv.className = 'form-text mt-2 text-danger';
+                    messageDiv.style.display = 'block';
+                }
+            }
+        </script>
+}

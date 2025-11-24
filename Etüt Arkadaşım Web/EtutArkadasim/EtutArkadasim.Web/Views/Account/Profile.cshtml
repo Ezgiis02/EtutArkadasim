@@ -1,0 +1,49 @@
+﻿@* GÜNCELLENDİ (Req 4): Bu sayfa artık "Profili Düzenle" sayfasıdır *@
+@model EtutArkadasim.Web.ViewModels.EditProfileViewModel
+@{
+    ViewData["Title"] = "Profilimi Düzenle";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Profile" method="post">
+            <h4>Profil bilgilerinizi güncelleyin.</h4>
+            <hr />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <!-- Ad Soyad Alanı -->
+            <div class="form-floating mb-3">
+                <input asp-for="Name" class="form-control" placeholder="Adınız Soyadınız" />
+                <label asp-for="Name"></label>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <!-- Profil Fotoğrafı URL Alanı -->
+            <div class="form-floating mb-3">
+                <input asp-for="ProfileImageUrl" class="form-control" placeholder="https://..." />
+                <label asp-for="ProfileImageUrl"></label>
+                <span asp-validation-for="ProfileImageUrl" class="text-danger"></span>
+                <div class="form-text">
+                    Lütfen bir fotoğraf URL'si yapıştırın (örn: Imgur, Postimage).
+                </div>
+            </div>
+
+            <!-- Kaydet Butonu -->
+            <div class="mb-3">
+                <button type="submit" class="w-100 btn btn-lg btn-primary">
+                    <i class="bi bi-check-circle"></i> Kaydet
+                </button>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

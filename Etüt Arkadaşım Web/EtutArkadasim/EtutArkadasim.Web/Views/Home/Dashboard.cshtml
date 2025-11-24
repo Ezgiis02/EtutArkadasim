@@ -1,0 +1,447 @@
+﻿@* BU DOSYA YENİDİR (Eski Profile.cshtml'in taşınmış halidir) *@
+@model EtutArkadasim.Web.Models.User
+@{
+    ViewData["Title"] = "Kontrol Panelim";
+}
+
+<!-- Puanlama Yıldızları Stili -->
+<style>
+    .rating-stars {
+        cursor: pointer;
+        font-size: 2rem;
+        color: #ccc;
+    }
+
+        .rating-stars i:hover ~ i {
+            color: #ccc;
+        }
+
+        .rating-stars:hover i {
+            color: #ffc107;
+        }
+
+        .rating-stars i.selected,
+        .rating-stars i:hover {
+            color: #ffc107;
+        }
+</style>
+
+<div class="row">
+    <!-- Sol Taraf: Profil Bilgileri -->
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h3><i class="bi bi-person-vcard"></i> Profil Bilgileri</h3>
+            </div>
+            <div class="card-body">
+
+                <!-- GÜNCELLENDİ (Req 4): Profil Fotoğrafı -->
+                <img src="@(string.IsNullOrEmpty(Model.ProfileImageUrl) ? $"https://placehold.co/100x100/663399/FFFFFF?text={Model.Name.Substring(0, 1)}" : Model.ProfileImageUrl)"
+                     class="rounded-circle mb-3 mx-auto d-block"
+                     alt="@Model.Name"
+                     style="width:100px; height:100px; object-fit: cover;"
+                     onerror="this.src='https://placehold.co/100x100/663399/FFFFFF?text=?'">
+
+                <h5 class="card-title text-center">@Model.Name</h5>
+                <p class="card-text text-muted text-center">@Model.Email</p>
+                <hr>
+                <p>
+                    <strong>Ortalama Puan:</strong>
+                    <span id="average-rating-text"><i class="bi bi-star-fill text-warning"></i> @Model.AverageRating.ToString("F1")</span> / 5.0
+                </p>
+                <a asp-controller="Account" asp-action="Profile" class="btn btn-outline-primary btn-sm w-100">
+                    <i class="bi bi-person-gear"></i> Profili Düzenle
+                </a>
+            </div>
+        </div>
+
+        <!-- Gelen Talepler Kartı -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h4><i class="bi bi-envelope-paper-fill"></i> Gelen Etüt Talepleri</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group" id="pending-requests-list">
+                    <li class="list-group-item text-center" id="pending-requests-loading">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Sağ Taraf: Dersler ve Arkadaşlar -->
+    <div class="col-md-8">
+        <!-- Derslerim Kartı -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4><i class="bi bi-book-half"></i> Seçtiğim Dersler</h4>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addCourseModal">
+                    <i class="bi bi-plus-lg"></i> Ders Ekle
+                </button>
+            </div>
+            <div class="card-body">
+                <ul class="list-group" id="my-courses-list">
+                    <li class="list-group-item text-center" id="my-courses-loading">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Arkadaşlarım Kartı -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4><i class="bi bi-people-fill"></i> Arkadaşlarım (Eşleşmeler)</h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group" id="my-friends-list">
+                    <li class="list-group-item text-center" id="my-friends-loading">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ders Ekleme Modalı -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" aria-labelledby="addCourseModalLabel" aria-hidden="true">
+    <!-- Modal içeriği (Hafta 6 ile aynı, değişiklik yok) -->
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCourseModalLabel"><i class="bi bi-journal-album"></i> Tüm Dersler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Eklemek istediğiniz dersi seçin:</p>
+                <div class="mb-3" id="all-courses-loading">
+                    <div class="spinner-border spinner-border-sm" role="status"></div>
+                    <span>Tüm dersler yükleniyor...</span>
+                </div>
+                <div class="list-group" id="all-courses-list" style="display:none;">
+                    <!-- JavaScript tarafından doldurulacak -->
+                </div>
+                <div id="add-course-message" class="mt-3" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kapat</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Puan Ver Modalı -->
+<div class="modal fade" id="rateFriendModal" tabindex="-1" aria-labelledby="rateFriendModalLabel" aria-hidden="true">
+    <!-- Modal içeriği (Hafta 6 ile aynı, değişiklik yok) -->
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="rateFriendModalLabel"><i class="bi bi-star-half"></i> Puan Ver</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="rateFriendModalText">Puan veriyorsunuz...</p>
+                <div class="rating-stars text-center mb-3">
+                    <i class="bi bi-star" data-score="1" title="Çok Kötü"></i>
+                    <i class="bi bi-star" data-score="2" title="Kötü"></i>
+                    <i class="bi bi-star" data-score="3" title="Orta"></i>
+                    <i class="bi bi-star" data-score="4" title="İyi"></i>
+                    <i class="bi bi-star" data-score="5" title="Çok İyi"></i>
+                </div>
+                <input type="hidden" id="rateFriendIdInput">
+                <input type="hidden" id="rateFriendScoreInput" value="0">
+                <div id="rate-message" class="mt-3" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="submitRating()">
+                    <i class="bi bi-check-circle"></i> Puanı Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Dashboard'un tüm JS kodları (Hafta 6'daki Profile.cshtml ile aynı) -->
+    <script>
+        // --- Değişkenler ---
+        let currentRating = 0;
+
+        // --- Olay Yükleyicileri (Event Listeners) ---
+        document.addEventListener("DOMContentLoaded", function() {
+            loadMyCourses();
+            loadAllCourses();
+            loadPendingRequests();
+            loadMyFriends();
+            setupRatingModal();
+        });
+
+        // --- 3. HAFTA (DERSLER) ---
+        async function loadMyCourses() {
+            const list = document.getElementById('my-courses-list');
+            const loadingIndicator = document.getElementById('my-courses-loading');
+            try {
+                const response = await fetch('/api/courses/getmycourses');
+                if (!response.ok) { throw new Error('Sunucu hatası: ' + response.status); }
+                const myCourses = await response.json();
+                list.innerHTML = '';
+                if (myCourses.length === 0) {
+                    list.innerHTML = '<li class="list-group-item">Henüz ders seçmediniz.</li>';
+                } else {
+                    myCourses.forEach(course => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                        li.textContent = `${course.courseName} (${course.courseCode})`;
+                        list.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Kullanıcı dersleri yüklenirken hata:', error);
+                loadingIndicator.innerHTML = '<li class="list-group-item text-danger">Dersler yüklenemedi.</li>';
+            }
+        }
+
+        async function loadAllCourses() {
+            const list = document.getElementById('all-courses-list');
+            const loadingIndicator = document.getElementById('all-courses-loading');
+            try {
+                const response = await fetch('/api/courses/getall');
+                if (!response.ok) throw new Error('Dersler alınamadı.');
+                const allCourses = await response.json();
+                list.innerHTML = '';
+                allCourses.forEach(course => {
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'list-group-item list-group-item-action';
+                    a.dataset.courseId = course.id;
+                    a.textContent = `${course.courseName} (${course.department})`;
+                    a.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        addCourse(course.id, a);
+                    });
+                    list.appendChild(a);
+                });
+                loadingIndicator.style.display = 'none';
+                list.style.display = 'block';
+            } catch (error) {
+                console.error('Tüm dersler yüklenirken hata:', error);
+                loadingIndicator.innerHTML = '<span class="text-danger">Tüm dersler yüklenemedi.</span>';
+            }
+        }
+
+        async function addCourse(courseId, buttonElement) {
+            const messageDiv = document.getElementById('add-course-message');
+            buttonElement.classList.add('disabled');
+            messageDiv.style.display = 'none';
+            try {
+                const response = await fetch(`/api/courses/add/${courseId}`, {
+                    method: 'POST',
+                    headers: {}
+                });
+                if (!response.ok) throw new Error('Sunucuyla iletişim kurulamadı.');
+                const result = await response.json();
+                messageDiv.textContent = result.message;
+                messageDiv.className = 'mt-3 alert alert-success';
+                messageDiv.style.display = 'block';
+                loadMyCourses();
+            } catch (error) {
+                console.error('Ders eklenirken hata:', error);
+                messageDiv.textContent = 'Ders eklenirken bir hata oluştu.';
+                messageDiv.className = 'mt-3 alert alert-danger';
+                messageDiv.style.display = 'block';
+            } finally {
+                buttonElement.classList.remove('disabled');
+            }
+        }
+
+        // --- 5. HAFTA (TALEPLER VE ARKADAŞLAR) ---
+        async function loadPendingRequests() {
+            const list = document.getElementById('pending-requests-list');
+            try {
+                const response = await fetch('/api/request/pending');
+                if (!response.ok) throw new Error('Talepler yüklenemedi.');
+                const requests = await response.json();
+                list.innerHTML = '';
+                if (requests.length === 0) {
+                    list.innerHTML = '<li class="list-group-item">Gelen kutunuz boş.</li>';
+                } else {
+                    requests.forEach(req => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                        li.id = `request-${req.requestId}`;
+                        const infoDiv = document.createElement('div');
+                        infoDiv.textContent = req.senderName;
+                        li.appendChild(infoDiv);
+                        const actionDiv = document.createElement('div');
+                        const acceptBtn = document.createElement('button');
+                        acceptBtn.className = 'btn btn-success btn-sm me-2';
+                        acceptBtn.innerHTML = '<i class="bi bi-check-lg"></i> Kabul Et';
+                        acceptBtn.onclick = () => handleRequest(req.requestId, 'accept');
+                        actionDiv.appendChild(acceptBtn);
+                        const rejectBtn = document.createElement('button');
+                        rejectBtn.className = 'btn btn-danger btn-sm';
+                        rejectBtn.innerHTML = '<i class="bi bi-x-lg"></i> Reddet';
+                        rejectBtn.onclick = () => handleRequest(req.requestId, 'reject');
+                        actionDiv.appendChild(rejectBtn);
+                        li.appendChild(actionDiv);
+                        list.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Gelen talepler yüklenirken hata:', error);
+                list.innerHTML = '<li class="list-group-item text-danger">Talepler yüklenemedi.</li>';
+            }
+        }
+
+        async function loadMyFriends() {
+            const list = document.getElementById('my-friends-list');
+            try {
+                const response = await fetch('/api/request/myfriends');
+                if (!response.ok) throw new Error('Arkadaşlar yüklenemedi.');
+                const friends = await response.json();
+                list.innerHTML = '';
+                if (friends.length === 0) {
+                    list.innerHTML = '<li class="list-group-item">Henüz eşleştiğiniz kimse yok.</li>';
+                } else {
+                    friends.forEach(friend => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                        const infoSpan = document.createElement('span');
+                        infoSpan.innerHTML = `<i class="bi bi-person-fill"></i> ${friend.name} (<i class="bi bi-star-fill text-warning"></i> ${friend.averageRating.toFixed(1)})`;
+                        li.appendChild(infoSpan);
+                        const rateBtn = document.createElement('button');
+                        rateBtn.className = 'btn btn-outline-warning btn-sm';
+                        rateBtn.innerHTML = '<i class="bi bi-star-half"></i> Puan Ver';
+                        rateBtn.dataset.bsToggle = 'modal';
+                        rateBtn.dataset.bsTarget = '#rateFriendModal';
+                        rateBtn.dataset.friendId = friend.id;
+                        rateBtn.dataset.friendName = friend.name;
+                        li.appendChild(rateBtn);
+                        list.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                console.error('Arkadaşlar yüklenirken hata:', error);
+                list.innerHTML = '<li class="list-group-item text-danger">Arkadaşlar yüklenemedi.</li>';
+            }
+        }
+
+        async function handleRequest(requestId, action) {
+            const li = document.getElementById(`request-${requestId}`);
+            li.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            try {
+                const response = await fetch(`/api/request/${action}/${requestId}`, {
+                    method: 'POST'
+                });
+                if (!response.ok) {
+                    const errorResult = await response.json();
+                    throw new Error(errorResult.message || 'İşlem başarısız.');
+                }
+                li.remove();
+                if(action === 'accept') {
+                    loadMyFriends();
+                }
+                const list = document.getElementById('pending-requests-list');
+                if (list.children.length === 0) {
+                    list.innerHTML = '<li class="list-group-item">Gelen kutunuz boş.</li>';
+                }
+            } catch (error) {
+                console.error('Talep işlenirken hata:', error);
+                alert(`Hata: ${error.message}`);
+                li.querySelectorAll('button').forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // --- 6. HAFTA (PUANLAMA) ---
+        function setupRatingModal() {
+            const rateModal = document.getElementById('rateFriendModal');
+            const stars = rateModal.querySelectorAll('.rating-stars i');
+            rateModal.addEventListener('show.bs.modal', function (event) {
+                const button = event.relatedTarget;
+                const friendId = button.dataset.friendId;
+                const friendName = button.dataset.friendName;
+                rateModal.querySelector('#rateFriendIdInput').value = friendId;
+                rateModal.querySelector('#rateFriendModalLabel').textContent = `Puan Ver: ${friendName}`;
+                rateModal.querySelector('#rateFriendModalText').textContent = `'${friendName}' ile çalışmanızı 1-5 arası puanlayın:`;
+                resetStars();
+                document.getElementById('rate-message').style.display = 'none';
+            });
+            stars.forEach(star => {
+                star.addEventListener('click', function () {
+                    currentRating = parseInt(this.dataset.score);
+                    rateModal.querySelector('#rateFriendScoreInput').value = currentRating;
+                    highlightStars(currentRating);
+                });
+            });
+            rateModal.querySelector('.rating-stars').addEventListener('mouseover', function(e) {
+                if (e.target.tagName === 'I') {
+                    const score = parseInt(e.target.dataset.score);
+                    highlightStars(score);
+                }
+            });
+            rateModal.querySelector('.rating-stars').addEventListener('mouseout', function() {
+                highlightStars(currentRating);
+            });
+        }
+
+        function highlightStars(score) {
+            const stars = document.querySelectorAll('#rateFriendModal .rating-stars i');
+            stars.forEach(star => {
+                if (parseInt(star.dataset.score) <= score) {
+                    star.classList.remove('bi-star');
+                    star.classList.add('bi-star-fill');
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('bi-star-fill');
+                    star.classList.add('bi-star');
+                    star.classList.remove('selected');
+                }
+            });
+        }
+
+        function resetStars() {
+            currentRating = 0;
+            document.getElementById('rateFriendScoreInput').value = 0;
+            highlightStars(0);
+        }
+
+        async function submitRating() {
+            const friendId = document.getElementById('rateFriendIdInput').value;
+            const score = parseInt(document.getElementById('rateFriendScoreInput').value);
+            const messageDiv = document.getElementById('rate-message');
+            if (score === 0) {
+                messageDiv.textContent = 'Lütfen 1-5 arası bir puan seçin.';
+                messageDiv.className = 'mt-3 alert alert-warning';
+                messageDiv.style.display = 'block';
+                return;
+            }
+            const data = {
+                ratedUserId: friendId,
+                score: score
+            };
+            try {
+                const response = await fetch('/api/rating/rate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) {
+                    const errorResult = await response.json();
+                    throw new Error(errorResult.message || 'Puanlama başarısız.');
+                }
+                const result = await response.json();
+                bootstrap.Modal.getInstance(document.getElementById('rateFriendModal')).hide();
+                loadMyFriends();
+            } catch (error) {
+                console.error('Puanlama hatası:', error);
+                messageDiv.textContent = `Hata: ${error.message}`;
+                messageDiv.className = 'mt-3 alert alert-danger';
+                messageDiv.style.display = 'block';
+            }
+        }
+    </script>
+}

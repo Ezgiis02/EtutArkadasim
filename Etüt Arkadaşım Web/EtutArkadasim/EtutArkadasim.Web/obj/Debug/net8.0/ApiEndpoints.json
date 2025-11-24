@@ -1,0 +1,132 @@
+[
+  {
+    "ContainingType": "CoursesController",
+    "Method": "AddCourse",
+    "RelativePath": "api/Courses/add/{courseId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "AddSampleCourses",
+    "RelativePath": "api/Courses/addsamples",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "GetAllCourses",
+    "RelativePath": "api/Courses/getall",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "CoursesController",
+    "Method": "GetMyCourses",
+    "RelativePath": "api/Courses/getmycourses",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "RatingController",
+    "Method": "RateFriend",
+    "RelativePath": "api/rating/rate",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "viewModel",
+        "Type": "EtutArkadasim.Web.ViewModels.RatingViewModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudyRequestController",
+    "Method": "AcceptRequest",
+    "RelativePath": "api/request/accept/{requestId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudyRequestController",
+    "Method": "GetMyFriends",
+    "RelativePath": "api/request/myfriends",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudyRequestController",
+    "Method": "GetMyPendingRequests",
+    "RelativePath": "api/request/pending",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudyRequestController",
+    "Method": "RejectRequest",
+    "RelativePath": "api/request/reject/{requestId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "requestId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "StudyRequestController",
+    "Method": "SendRequest",
+    "RelativePath": "api/request/send/{receiverId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "receiverId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]
