@@ -6,6 +6,11 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using System;
 
 namespace EtutArkadasim.Web.Controllers
 {
@@ -13,17 +18,33 @@ namespace EtutArkadasim.Web.Controllers
     {
         private readonly IMongoDatabase _database;
         private readonly IMongoCollection<User> _usersCollection;
+        private readonly IMongoCollection<Department> _departmentsCollection;
 
-        public AccountController(IMongoDatabase database)
+        // YENİ: Sadece şehir listesi için
+        private readonly IMongoCollection<CityData> _citiesCollection;
+
+        private readonly IWebHostEnvironment _environment;
+
+        public AccountController(IMongoDatabase database, IWebHostEnvironment environment)
         {
             _database = database;
             _usersCollection = _database.GetCollection<User>("users");
+            _departmentsCollection = _database.GetCollection<Department>("departments");
+
+            // "cities" tablosuna bağlanıyoruz
+            _citiesCollection = _database.GetCollection<CityData>("cities");
+
+            _environment = environment;
         }
 
-        // --- KAYIT (REGISTER) METOTLARI ---
+        // ==========================================
+        // 1. KAYIT (REGISTER)
+        // ==========================================
         [HttpGet]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
+            ViewBag.Departments = await _departmentsCollection.Find(_ => true).ToListAsync();
+            // Kayıt olurken de şehir seçtirmek istersen buraya ViewBag.Cities ekleyebilirsin
             return View();
         }
 
@@ -36,33 +57,34 @@ namespace EtutArkadasim.Web.Controllers
                 var existingUser = await _usersCollection.Find(u => u.Email == model.Email.ToLower()).FirstOrDefaultAsync();
                 if (existingUser != null)
                 {
-                    ModelState.AddModelError("Email", "Bu e-posta adresi zaten kullanılıyor.");
+                    ModelState.AddModelError("Email", "Bu e-posta zaten kullanımda.");
+                    ViewBag.Departments = await _departmentsCollection.Find(_ => true).ToListAsync();
                     return View(model);
                 }
 
-                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(model.Password);
                 var newUser = new User
                 {
-                    Name = model.Name,
-                    Email = model.Email.ToLower(),
-                    PasswordHash = hashedPassword,
-                    ProfileImageUrl = "" // Başlangıçta boş
+                    Name = model.Name.Trim(),
+                    Email = model.Email.ToLower().Trim(),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.Password),
+                    ProfileImageUrl = "",
+                    DepartmentId = model.DepartmentId
                 };
 
                 await _usersCollection.InsertOneAsync(newUser);
-
-                TempData["SuccessMessage"] = "Kaydınız başarıyla oluşturuldu. Lütfen giriş yapınız.";
-                return RedirectToAction("Login", "Account");
+                TempData["SuccessMessage"] = "Kayıt başarılı. Giriş yapabilirsiniz.";
+                return RedirectToAction("Login");
             }
+
+            ViewBag.Departments = await _departmentsCollection.Find(_ => true).ToListAsync();
             return View(model);
         }
 
-        // --- GİRİŞ (LOGIN) METOTLARI ---
+        // ==========================================
+        // 2. GİRİŞ (LOGIN)
+        // ==========================================
         [HttpGet]
-        public IActionResult Login()
-        {
-            return View();
-        }
+        public IActionResult Login() => View();
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -71,7 +93,6 @@ namespace EtutArkadasim.Web.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _usersCollection.Find(u => u.Email == model.Email.ToLower()).FirstOrDefaultAsync();
-
                 if (user != null && BCrypt.Net.BCrypt.Verify(model.Password, user.PasswordHash))
                 {
                     var claims = new List<Claim>
@@ -81,31 +102,19 @@ namespace EtutArkadasim.Web.Controllers
                         new Claim(ClaimTypes.NameIdentifier, user.Id.ToString())
                     };
 
-                    var claimsIdentity = new ClaimsIdentity(
-                        claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
-                    var authProperties = new AuthenticationProperties
-                    {
-                        IsPersistent = true,
-                        ExpiresUtc = DateTimeOffset.UtcNow.Add(TimeSpan.FromDays(30))
-                    };
-
-                    await HttpContext.SignInAsync(
-                        CookieAuthenticationDefaults.AuthenticationScheme,
-                        new ClaimsPrincipal(claimsIdentity),
-                        authProperties);
-
-                    // Giriş başarılı, Ana Sayfa'ya yönlendir (Artık Dashboard'u gösterecek)
                     return RedirectToAction("Index", "Home");
                 }
-
-                ModelState.AddModelError(string.Empty, "Geçersiz e-posta veya şifre.");
-                return View(model);
+                ModelState.AddModelError("", "Hatalı e-posta veya şifre.");
             }
             return View(model);
         }
 
-        // --- ÇIKIŞ (LOGOUT) METODU ---
+        // ==========================================
+        // 3. ÇIKIŞ (LOGOUT)
+        // ==========================================
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Logout()
@@ -114,79 +123,118 @@ namespace EtutArkadasim.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // --- (Req 3 & 4): PROFİL SAYFASI ARTIK "PROFİLİ DÜZENLE" SAYFASI ---
+        // ==========================================
+        // 4. PROFİL (GET)
+        // ==========================================
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Profile() // _Layout.cshtml'deki link buraya geliyor
+        public async Task<IActionResult> Profile()
         {
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId))
-            {
-                return Unauthorized();
-            }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+            if (user == null) return NotFound();
 
-            var user = await _usersCollection.Find(u => u.Id == currentUserId).FirstOrDefaultAsync();
-            if (user == null)
-            {
-                return NotFound("Kullanıcı bulunamadı.");
-            }
+            // Bölümleri al
+            ViewBag.Departments = await _departmentsCollection.Find(_ => true).ToListAsync();
 
-            // Veritabanı modelini ViewModel'e dönüştür
-            var viewModel = new EditProfileViewModel
+            // Şehirleri "cities" tablosundan al
+            ViewBag.Cities = await _citiesCollection.Find(_ => true).ToListAsync();
+
+            var model = new EditProfileViewModel
             {
                 Name = user.Name,
-                ProfileImageUrl = user.ProfileImageUrl
+                Email = user.Email,
+                DepartmentId = user.DepartmentId,
+                CurrentProfileImageUrl = user.ProfileImageUrl,
+                City = user.City,
+                District = user.District,
+                PreferredLocationsText = user.PreferredLocationsText
             };
 
-            return View(viewModel); // Views/Account/Profile.cshtml'i döndür
+            return View(model);
         }
 
-        // (Req 4): PROFİLİ GÜNCELLEME METODU
+        // ==========================================
+        // 5. PROFİL (POST)
+        // ==========================================
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Profile(EditProfileViewModel model)
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _usersCollection.Find(u => u.Id == userId).FirstOrDefaultAsync();
+
+            if (user == null) return RedirectToAction("Login");
+
+            // Şifre boşsa validasyon hatalarını temizle
+            if (string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                ModelState.Remove(nameof(model.CurrentPassword));
+                ModelState.Remove(nameof(model.NewPassword));
+                ModelState.Remove(nameof(model.ConfirmNewPassword));
+            }
+
+            // Hata varsa sayfayı tekrar doldurup göster
             if (!ModelState.IsValid)
             {
-                return View(model); // Hata varsa formu tekrar göster
+                ViewBag.Departments = await _departmentsCollection.Find(_ => true).ToListAsync();
+                ViewBag.Cities = await _citiesCollection.Find(_ => true).ToListAsync();
+                model.CurrentProfileImageUrl = user.ProfileImageUrl;
+                return View(model);
             }
 
-            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(currentUserId))
+            // --- GÜNCELLEME AYARLARI ---
+            var updateDef = Builders<User>.Update
+                .Set(u => u.Name, model.Name.Trim())
+                .Set(u => u.DepartmentId, model.DepartmentId)
+                // Şehir ve İlçe verisini güvenli şekilde kaydediyoruz
+                .Set(u => u.City, model.City)
+                .Set(u => u.District, model.District)
+                .Set(u => u.PreferredLocationsText, model.PreferredLocationsText?.Trim());
+
+            // --- 1. PROFIL FOTOĞRAFI YÜKLEME KISMI ---
+            if (model.ProfileImageFile != null && model.ProfileImageFile.Length > 0)
             {
-                return Unauthorized();
+                // Dosya adını benzersiz yap (User ID + Tarih)
+                var extension = Path.GetExtension(model.ProfileImageFile.FileName).ToLower();
+                var fileName = $"{userId}_{DateTime.Now:yyyyMMddHHmmss}{extension}";
+
+                // Klasör yolunu belirle (wwwroot/images/profiles)
+                var path = Path.Combine(_environment.WebRootPath, "images", "profiles", fileName);
+
+                // Klasör yoksa oluştur
+                if (!Directory.Exists(Path.GetDirectoryName(path)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+
+                // Dosyayı kaydet
+                using (var stream = new FileStream(path, FileMode.Create))
+                {
+                    await model.ProfileImageFile.CopyToAsync(stream);
+                }
+
+                // Veritabanına dosya yolunu yaz
+                updateDef = updateDef.Set(u => u.ProfileImageUrl, $"/images/profiles/{fileName}");
             }
 
-            // Kullanıcının adını ve fotoğraf URL'sini güncelle
-            var filter = Builders<User>.Filter.Eq(u => u.Id, currentUserId);
-            var update = Builders<User>.Update
-                .Set(u => u.Name, model.Name)
-                .Set(u => u.ProfileImageUrl, model.ProfileImageUrl ?? string.Empty); // Null gelirse diye kontrol
+            // --- 2. ŞİFRE GÜNCELLEME ---
+            if (!string.IsNullOrWhiteSpace(model.NewPassword))
+            {
+                updateDef = updateDef.Set(u => u.PasswordHash, BCrypt.Net.BCrypt.HashPassword(model.NewPassword));
+            }
 
-            await _usersCollection.UpdateOneAsync(filter, update);
+            // --- 3. VERİTABANINI GÜNCELLE ---
+            await _usersCollection.UpdateOneAsync(u => u.Id == userId, updateDef);
 
-            // ÖNEMLİ: Kullanıcının Cookie'sini (Oturum) yeni adıyla güncellemeliyiz
-            // 1. Mevcut kimliği al
-            var principal = User;
-            var identity = (ClaimsIdentity)principal.Identity;
-
-            // 2. 'Name' claim'ini bul ve kaldır
+            // Cookie'deki İsmi Güncelle
+            var identity = (ClaimsIdentity)User.Identity;
             var nameClaim = identity.FindFirst(ClaimTypes.Name);
-            if (nameClaim != null)
-            {
-                identity.RemoveClaim(nameClaim);
-            }
-
-            // 3. Yeni 'Name' claim'ini ekle
+            if (nameClaim != null) identity.RemoveClaim(nameClaim);
             identity.AddClaim(new Claim(ClaimTypes.Name, model.Name));
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
-            // 4. Oturumu yeniden aç (cookie'yi güncelle)
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            // Başarı mesajı ekle ve Dashboard'a yönlendir
-            TempData["SuccessMessage"] = "Profiliniz başarıyla güncellendi.";
-            return RedirectToAction("Index", "Home"); // Dashboard'a yönlendir
+            TempData["SuccessMessage"] = "Profil bilgilerin başarıyla kaydedildi.";
+            return RedirectToAction("Profile");
         }
     }
 }

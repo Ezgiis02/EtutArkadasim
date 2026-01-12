@@ -35,5 +35,10 @@ namespace EtutArkadasim.Web.Models
         [BsonElement("requestedAt")]
         [BsonRepresentation(BsonType.DateTime)]
         public DateTime RequestedAt { get; set; } = DateTime.UtcNow;
+
+        // Talebin hangi ders için yapıldığı
+        [BsonElement("courseId")]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string CourseId { get; set; } = string.Empty;
     }
 }

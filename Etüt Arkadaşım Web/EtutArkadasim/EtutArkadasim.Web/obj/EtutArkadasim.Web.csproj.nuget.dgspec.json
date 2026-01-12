@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\ezgis\\source\\repos\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj": {}
+    "C:\\Users\\ezgis\\Documents\\GitHub\\EtutArkadasim\\Etüt Arkadaşım Web\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj": {}
   },
   "projects": {
-    "C:\\Users\\ezgis\\source\\repos\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj": {
+    "C:\\Users\\ezgis\\Documents\\GitHub\\EtutArkadasim\\Etüt Arkadaşım Web\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\ezgis\\source\\repos\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj",
+        "projectUniqueName": "C:\\Users\\ezgis\\Documents\\GitHub\\EtutArkadasim\\Etüt Arkadaşım Web\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj",
         "projectName": "EtutArkadasim.Web",
-        "projectPath": "C:\\Users\\ezgis\\source\\repos\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj",
+        "projectPath": "C:\\Users\\ezgis\\Documents\\GitHub\\EtutArkadasim\\Etüt Arkadaşım Web\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj",
         "packagesPath": "C:\\Users\\ezgis\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\ezgis\\source\\repos\\EtutArkadasim\\EtutArkadasim.Web\\obj\\",
+        "outputPath": "C:\\Users\\ezgis\\Documents\\GitHub\\EtutArkadasim\\Etüt Arkadaşım Web\\EtutArkadasim\\EtutArkadasim.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

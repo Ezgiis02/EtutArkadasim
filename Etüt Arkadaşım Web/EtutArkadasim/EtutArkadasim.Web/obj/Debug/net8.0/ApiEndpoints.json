@@ -1,6 +1,85 @@
 [
   {
-    "ContainingType": "CoursesController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.AuthController",
+    "Method": "Login",
+    "RelativePath": "api/Auth/login",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "EtutArkadasim.Web.ViewModels.LoginViewModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.AuthController",
+    "Method": "Register",
+    "RelativePath": "api/Auth/register",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "model",
+        "Type": "EtutArkadasim.Web.ViewModels.RegisterViewModel",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ChatController",
+    "Method": "GetMessages",
+    "RelativePath": "api/chat/messages/{friendId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "friendId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ChatController",
+    "Method": "SendMessage",
+    "RelativePath": "api/chat/send/{receiverId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "receiverId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "request",
+        "Type": "SendMessageRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "ChatController",
+    "Method": "GetUnreadMessageCount",
+    "RelativePath": "api/chat/unread-count",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.Api.CoursesController",
     "Method": "AddCourse",
     "RelativePath": "api/Courses/add/{courseId}",
     "HttpMethod": "POST",
@@ -11,22 +90,17 @@
         "Name": "courseId",
         "Type": "System.String",
         "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "CoursesController",
-    "Method": "AddSampleCourses",
-    "RelativePath": "api/Courses/addsamples",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "CoursesController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.Api.CoursesController",
     "Method": "GetAllCourses",
     "RelativePath": "api/Courses/getall",
     "HttpMethod": "GET",
@@ -36,13 +110,118 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "CoursesController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.Api.CoursesController",
     "Method": "GetMyCourses",
     "RelativePath": "api/Courses/getmycourses",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.Api.CoursesController",
+    "Method": "RemoveCourse",
+    "RelativePath": "api/Courses/remove/{courseId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "courseId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.DepartmentsController",
+    "Method": "GetAll",
+    "RelativePath": "api/Departments",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
     "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.DepartmentsController",
+    "Method": "GetById",
+    "RelativePath": "api/Departments/{id}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.DepartmentsController",
+    "Method": "SeedDepartments",
+    "RelativePath": "api/Departments/seed",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.Api.DiscoverApiController",
+    "Method": "Search",
+    "RelativePath": "api/discover/search",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "city",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "district",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "currentUserId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "LocationsController",
+    "Method": "GetDistricts",
+    "RelativePath": "api/Locations/districts/{cityName}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cityName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
     "ReturnTypes": []
   },
   {
@@ -62,7 +241,7 @@
     "ReturnTypes": []
   },
   {
-    "ContainingType": "StudyRequestController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
     "Method": "AcceptRequest",
     "RelativePath": "api/request/accept/{requestId}",
     "HttpMethod": "POST",
@@ -73,32 +252,70 @@
         "Name": "requestId",
         "Type": "System.String",
         "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "StudyRequestController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
+    "Method": "EndMatch",
+    "RelativePath": "api/request/endmatch/{friendId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "friendId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
     "Method": "GetMyFriends",
     "RelativePath": "api/request/myfriends",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "StudyRequestController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
     "Method": "GetMyPendingRequests",
     "RelativePath": "api/request/pending",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
-    "Parameters": [],
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "StudyRequestController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
     "Method": "RejectRequest",
     "RelativePath": "api/request/reject/{requestId}",
     "HttpMethod": "POST",
@@ -109,14 +326,40 @@
         "Name": "requestId",
         "Type": "System.String",
         "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []
   },
   {
-    "ContainingType": "StudyRequestController",
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
+    "Method": "RemoveFriend",
+    "RelativePath": "api/request/removefriend/{friendId}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "friendId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.StudyRequestController",
     "Method": "SendRequest",
-    "RelativePath": "api/request/send/{receiverId}",
+    "RelativePath": "api/request/send/{receiverId}/{courseId}",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
@@ -125,6 +368,32 @@
         "Name": "receiverId",
         "Type": "System.String",
         "IsRequired": true
+      },
+      {
+        "Name": "courseId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "EtutArkadasim.Web.Controllers.Api.UserApiController",
+    "Method": "GetProfile",
+    "RelativePath": "api/user/profile",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": false
       }
     ],
     "ReturnTypes": []

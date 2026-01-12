@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("EtutArkadasim.Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b4ca3a57f79432db210099b8733206d2c2951db4")]
 [assembly: System.Reflection.AssemblyProductAttribute("EtutArkadasim.Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("EtutArkadasim.Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

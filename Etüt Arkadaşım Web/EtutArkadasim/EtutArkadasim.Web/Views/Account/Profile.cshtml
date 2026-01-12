@@ -1,44 +1,117 @@
-﻿@* GÜNCELLENDİ (Req 4): Bu sayfa artık "Profili Düzenle" sayfasıdır *@
-@model EtutArkadasim.Web.ViewModels.EditProfileViewModel
+﻿@model EtutArkadasim.Web.ViewModels.EditProfileViewModel
 @{
     ViewData["Title"] = "Profilimi Düzenle";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm rounded-4 border-0">
+                <div class="card-body p-4 p-md-5">
 
-<div class="row">
-    <div class="col-md-6">
-        <form asp-action="Profile" method="post">
-            <h4>Profil bilgilerinizi güncelleyin.</h4>
-            <hr />
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success rounded-3 mb-4">
+                            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+                        </div>
+                    }
 
-            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                    <h3 class="fw-bold text-center mb-4">@ViewData["Title"]</h3>
 
-            <!-- Ad Soyad Alanı -->
-            <div class="form-floating mb-3">
-                <input asp-for="Name" class="form-control" placeholder="Adınız Soyadınız" />
-                <label asp-for="Name"></label>
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
+                    <form asp-action="Profile" method="post" enctype="multipart/form-data">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="CurrentProfileImageUrl" />
 
-            <!-- Profil Fotoğrafı URL Alanı -->
-            <div class="form-floating mb-3">
-                <input asp-for="ProfileImageUrl" class="form-control" placeholder="https://..." />
-                <label asp-for="ProfileImageUrl"></label>
-                <span asp-validation-for="ProfileImageUrl" class="text-danger"></span>
-                <div class="form-text">
-                    Lütfen bir fotoğraf URL'si yapıştırın (örn: Imgur, Postimage).
+                        <div class="text-center mb-4">
+                            <div class="position-relative d-inline-block">
+                                <img id="profilePreview"
+                                     src="@(string.IsNullOrEmpty(Model.CurrentProfileImageUrl) ? "https://placehold.co/150x150?text=Resim" : Model.CurrentProfileImageUrl)"
+                                     class="rounded-circle border border-4 border-white shadow-sm"
+                                     style="width: 120px; height: 120px; object-fit: cover;" />
+                                <label class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2 shadow-sm" style="cursor: pointer;">
+                                    <i class="bi bi-camera-fill"></i>
+                                    <input asp-for="ProfileImageFile" type="file" class="d-none" accept="image/*" onchange="previewImage(this)" />
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Name" class="form-control rounded-3" placeholder="Ad Soyad" />
+                            <label asp-for="Name">Ad Soyad</label>
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control rounded-3" readonly />
+                            <label asp-for="Email">E-posta (Değiştirilemez)</label>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <select asp-for="DepartmentId" class="form-select rounded-3">
+                                <option value="">Bölüm Seçiniz</option>
+                                @if (ViewBag.Departments != null)
+                                {
+                                    foreach (var d in (List<EtutArkadasim.Web.Models.Department>)ViewBag.Departments)
+                                    {
+                                        <option value="@d.Id">@d.DepartmentName</option>
+                                    }
+                                }
+                            </select>
+                            <label asp-for="DepartmentId">Bölüm</label>
+                        </div>
+
+                        <hr class="text-muted opacity-25 my-4" />
+
+                        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Konum Bilgileri</h5>
+
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="City" class="form-select rounded-3" id="citySelect">
+                                        <option value="">Şehir Seçiniz</option>
+                                    </select>
+                                    <label asp-for="City">Şehir</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <select asp-for="District" class="form-select rounded-3" id="districtSelect">
+                                        <option value="">İlçe Seçiniz</option>
+                                    </select>
+                                    <label asp-for="District">İlçe</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-floating mb-4">
+                            <input asp-for="PreferredLocationsText" class="form-control rounded-3" placeholder="Mekan" />
+                            <label asp-for="PreferredLocationsText">Tercih Edilen Mekan</label>
+                        </div>
+
+                        <div class="accordion mb-4" id="passAccordion">
+                            <div class="accordion-item border-0 bg-light rounded-3">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed bg-light rounded-3 shadow-none fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#passCollapse">
+                                        <i class="bi bi-shield-lock me-2"></i> Şifre Değiştir (Opsiyonel)
+                                    </button>
+                                </h2>
+                                <div id="passCollapse" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        <input asp-for="CurrentPassword" class="form-control mb-2 rounded-3" placeholder="Mevcut Şifre" />
+                                        <input asp-for="NewPassword" class="form-control mb-2 rounded-3" placeholder="Yeni Şifre" />
+                                        <input asp-for="ConfirmNewPassword" class="form-control rounded-3" placeholder="Yeni Şifre Tekrar" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-3 rounded-pill fw-bold shadow-sm">
+                            <i class="bi bi-save me-2"></i>Değişiklikleri Kaydet
+                        </button>
+                    </form>
                 </div>
             </div>
-
-            <!-- Kaydet Butonu -->
-            <div class="mb-3">
-                <button type="submit" class="w-100 btn btn-lg btn-primary">
-                    <i class="bi bi-check-circle"></i> Kaydet
-                </button>
-            </div>
-
-        </form>
+        </div>
     </div>
 </div>
 
@@ -46,4 +119,55 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) { document.getElementById('profilePreview').src = e.target.result; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // --- VERİTABANINDAN GELEN ŞEHİRLER ---
+        const locationList = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.Cities));
+
+        const citySelect = document.getElementById("citySelect");
+        const districtSelect = document.getElementById("districtSelect");
+
+        // Kullanıcının mevcut seçimleri
+        const incomingCity = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.City));
+        const incomingDistrict = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.District));
+
+        document.addEventListener("DOMContentLoaded", () => {
+            if (locationList) {
+                locationList.forEach(loc => {
+                    // Value ve Text aynı olmalı ki veritabanına isim olarak kaydolsun
+                    const opt = new Option(loc.CityName, loc.CityName);
+                    if (loc.CityName === incomingCity) opt.selected = true;
+                    citySelect.add(opt);
+                });
+            }
+
+            if (incomingCity) populateDistricts(incomingCity, incomingDistrict);
+        });
+
+        citySelect.addEventListener("change", e => {
+            populateDistricts(e.target.value, null);
+        });
+
+        function populateDistricts(cityName, selectedDist) {
+            districtSelect.innerHTML = '<option value="">İlçe Seçiniz</option>';
+
+            const foundCity = locationList.find(l => l.CityName === cityName);
+
+            if (foundCity && foundCity.Districts) {
+                foundCity.Districts.forEach(d => {
+                    // Value ve Text aynı olmalı
+                    const opt = new Option(d, d);
+                    if (d === selectedDist) opt.selected = true;
+                    districtSelect.add(opt);
+                });
+            }
+        }
+    </script>
 }

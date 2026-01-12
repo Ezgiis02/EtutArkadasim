@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "iZzgnFGPdHw=",
+  "dgSpecHash": "ifLoAPsC2ew=",
   "success": true,
-  "projectFilePath": "C:\\Users\\ezgis\\source\\repos\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj",
+  "projectFilePath": "C:\\Users\\ezgis\\Documents\\GitHub\\EtutArkadasim\\Etüt Arkadaşım Web\\EtutArkadasim\\EtutArkadasim.Web\\EtutArkadasim.Web.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\ezgis\\.nuget\\packages\\bcrypt.net-next\\4.0.3\\bcrypt.net-next.4.0.3.nupkg.sha512",
     "C:\\Users\\ezgis\\.nuget\\packages\\dnsclient\\1.6.1\\dnsclient.1.6.1.nupkg.sha512",

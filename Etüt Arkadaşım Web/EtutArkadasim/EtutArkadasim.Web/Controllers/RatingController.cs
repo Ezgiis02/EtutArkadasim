@@ -7,7 +7,7 @@ using System.Security.Claims;
 
 [Route("api/rating")]
 [ApiController]
-[Authorize] // Sadece giriş yapanlar puan verebilir
+//[Authorize] // Sadece giriş yapanlar puan verebilir
 public class RatingController : ControllerBase
 {
     private readonly IMongoCollection<User> _usersCollection;
@@ -58,7 +58,15 @@ public class RatingController : ControllerBase
         // 6. PUAN VERME İŞLEMİ:
         // Puanlanan kullanıcının (ratedUser) 'ratings' listesine yeni puanı (Score) ekle
         var filter = Builders<User>.Filter.Eq(u => u.Id, viewModel.RatedUserId);
-        var update = Builders<User>.Update.Push(u => u.Ratings, viewModel.Score);
+        // 1. Önce nesneyi oluştur
+        var newRating = new UserRating
+        {
+            RaterUserId = currentUserId, // Puanı vereni de eklemelisin!
+            Score = viewModel.Score
+        };
+
+        // 2. Sonra bu nesneyi listeye it
+        var update = Builders<User>.Update.Push(u => u.Ratings, newRating);
 
         await _usersCollection.UpdateOneAsync(filter, update);
 

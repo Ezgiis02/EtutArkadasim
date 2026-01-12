@@ -1,9 +1,16 @@
-/* Bu dosya, bootstrap.min.css'den SONRA yüklenir, 
-  bu nedenle buradaki kurallar varsayýlan stilleri ezer.
-*/
+/* --- 1. GLOBAL DEÐÝÞKENLER VE ANA TEMA --- */
+:root {
+    --bs-primary: #663399; /* Ana Mor Rengimiz */
+    --bs-primary-rgb: 102, 51, 153;
+    --bs-link-color: #663399;
+    --bs-link-hover-color: #4a2570;
+    --main-bg: #fbf8ff;
+}
 
 html {
     font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
@@ -12,74 +19,149 @@ html {
     }
 }
 
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-/* GÜNCELLENDÝ (Req 4) - Güzel Arka Plan */
 body {
-    margin-bottom: 60px; /* Footer yüksekliði */
-    /* Ana tema rengimizle (#663399) uyumlu çok açýk bir mor tonu */
-    background: linear-gradient(180deg, #f8f0ff 0%, #ffffff 50%);
-    background-attachment: fixed; /* Sayfa kaysa bile gradient sabit kalsýn */
+    margin-bottom: 80px; /* Footer alaný için */
+    background: linear-gradient(180deg, var(--main-bg) 0%, #ffffff 100%);
+    background-attachment: fixed;
+    color: #333;
+    font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
 
-/* Footer'ýn da (yeni arka plan üzerinde) temiz/beyaz görünmesini saðlýyoruz */
-footer.footer {
-    background-color: #ffffff;
+/* --- 2. NAVBAR (NAVÝGASYON) TASARIMI --- */
+.navbar {
+    backdrop-filter: blur(15px); /* Modern cam efekti */
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    padding: 0.8rem 0;
+    transition: all 0.3s ease;
 }
 
-
-/* --- (7. Hafta - Renk Uyumu) --- */
-
-/* Bootstrap'in varsayýlan MAVÝ rengini MOR ile eziyoruz */
-:root {
-    --bs-primary: #663399; /* Ana Mor Rengimiz */
-    --bs-primary-rgb: 102, 51, 153;
-    --bs-link-color: #663399; /* Linklerin rengi */
-    --bs-link-hover-color: #4a2570; /* Linklerin üzerine gelince */
-}
-
-/* Ana Buton (Mor Dolgulu) */
-.btn-primary {
-    --bs-btn-color: #fff;
-    --bs-btn-bg: #663399;
-    --bs-btn-border-color: #663399;
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #552b80;
-    --bs-btn-hover-border-color: #4a2570;
-    --bs-btn-active-bg: #4a2570;
-    --bs-btn-active-border-color: #4a2570;
-    --bs-btn-disabled-bg: #663399;
-    --bs-btn-disabled-border-color: #663399;
-}
-
-/* Çerçeveli (Outlined) Buton (Kayýt Ol butonu için) */
-.btn-outline-primary {
-    --bs-btn-color: #663399;
-    --bs-btn-border-color: #663399;
-    --bs-btn-hover-color: #fff;
-    --bs-btn-hover-bg: #663399;
-    --bs-btn-hover-border-color: #663399;
-    --bs-btn-active-color: #fff;
-    --bs-btn-active-bg: #663399;
-    --bs-btn-active-border-color: #663399;
-    --bs-btn-disabled-color: #663399;
-    --bs-btn-disabled-border-color: #663399;
-}
-
-/* Ana logonun da bu rengi almasýný saðlýyoruz */
-.navbar-brand .bi {
+.navbar-brand {
+    font-weight: 800;
+    letter-spacing: -0.5px;
     color: var(--bs-primary) !important;
 }
 
-/* Kartlara hafif bir gölge ve hover efekti ekleyelim */
+    .navbar-brand .bi {
+        font-size: 1.5rem;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
+.nav-link {
+    font-weight: 500;
+    color: #555 !important;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.2s ease;
+}
+
+    .nav-link:hover {
+        color: var(--bs-primary) !important;
+    }
+
+/* --- 3. BUTONLAR (MODERN VE CANLI) --- */
+.btn {
+    border-radius: 10px; /* Daha yumuþak köþeler */
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #663399, #824cc3);
+    border: none;
+    box-shadow: 0 4px 12px rgba(102, 51, 153, 0.25);
+}
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(102, 51, 153, 0.35);
+        background: linear-gradient(45deg, #552b80, #663399);
+    }
+
+.btn-outline-primary {
+    border-width: 2px;
+}
+
+    .btn-outline-primary:hover {
+        transform: translateY(-2px);
+    }
+
+/* --- 4. KARTLAR (DASHBOARD VE ARKADAÞ BUL) --- */
 .card {
-    transition: all 0.2s ease-in-out;
+    border: none;
+    border-radius: 16px;
+    background-color: #ffffff;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
     .card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(102, 51, 153, 0.12) !important;
+    }
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    padding: 1.25rem;
+}
+
+/* --- 5. FORM ELEMANLARI --- */
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #eee;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.25rem rgba(102, 51, 153, 0.1);
+        outline: none;
+    }
+
+/* --- 6. FOOTER --- */
+footer.footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    line-height: 60px;
+    background-color: #fff;
+    border-top: 1px solid #eee;
+}
+
+/* --- 7. ÖZEL YARDIMCI SINIFLAR --- */
+.text-primary {
+    color: var(--bs-primary) !important;
+}
+
+.bg-primary {
+    background-color: var(--bs-primary) !important;
+}
+
+/* Profil resmi önizlemesi için yuvarlak çerçeve */
+.profile-img-preview {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    border: 4px solid #fff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+/* --- NAVBAR VE DROPDOWN DÜZELTMESÝ --- */
+/* Navbar'ý diðer elementlerin önüne alýr */
+nav.navbar {
+    position: relative;
+    z-index: 1050 !important;
+}
+
+/* Açýlýr menüyü (dropdown) kesinlikle en üstte tutar */
+.dropdown-menu {
+    z-index: 1060 !important;
+    display: none; /* Varsayýlan gizli */
+}
+
+    /* Dropdown show sýnýfýný aldýðýnda görünür yap (Bootstrap çakýþmasýný önler) */
+    .dropdown-menu.show {
+        display: block;
     }

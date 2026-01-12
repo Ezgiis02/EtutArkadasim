@@ -1,15 +1,22 @@
 using MongoDB.Driver;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using MongoDB.Bson.Serialization.Conventions;
+
+var pack = new ConventionPack
+{
+    new CamelCaseElementNameConvention(), // name -> Name eþleþmesini saðlar
+    new IgnoreExtraElementsConvention(true) // Fazladan alan varsa patlamasýn
+};
+ConventionRegistry.Register("My Convention", pack, t => true);
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. MongoDB Ayarlarý (Zaten vardý)
-// ... (MongoDB ayarlarýnýz burada) ...
+// 1. MongoDB Ayarlarý
 var mongoDbSettings = builder.Configuration.GetSection("MongoDbConfig");
 var connectionString = mongoDbSettings["ConnectionString"];
 var databaseName = mongoDbSettings["DatabaseName"];
 
-// 2. MongoDB Servisleri (Zaten vardý)
+// 2. MongoDB Servisleri
 builder.Services.AddSingleton<IMongoClient>(sp =>
 {
     return new MongoClient(connectionString);
@@ -20,10 +27,23 @@ builder.Services.AddSingleton<IMongoDatabase>(sp =>
     return client.GetDatabase(databaseName);
 });
 
-// 3. MVC Servisleri (Zaten vardý)
+// 3. MVC Servisleri
 builder.Services.AddControllersWithViews();
 
-// 4. Authentication (Kimlik Doðrulama) Servisi (Zaten vardý)
+// --- EKLENDÝ: CORS SERVÝSÝ (Tarayýcý Eriþim Ýzni Ýçin) ---
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+// ---------------------------------------------------------
+
+// 4. Authentication (Kimlik Doðrulama) Servisi
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
@@ -31,12 +51,31 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/Account/Logout";
         options.ExpireTimeSpan = TimeSpan.FromDays(30);
         options.SlidingExpiration = true;
+
+        options.Cookie.Name = "StudyBuddy.Auth"; // Cookie'ye bir isim verelim
+        options.Cookie.HttpOnly = true;          // JavaScript eriþemez (Güvenlik)
+
+        // ÖNEMLÝ: HTTP üzerinden çalýþmasý için bu ikisi þart:
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        // --- YENÝ EKLENEN KISIM (BAÞLANGIÇ) ---
+        // Eðer istek /api ile baþlýyorsa, Login sayfasýna yönlendirme!
+        // Direkt 401 hatasý ver ki Flutter anlasýn.
+        options.Events.OnRedirectToLogin = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api"))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        };
+        // --- YENÝ EKLENEN KISIM (BÝTÝÞ) ---
     });
 
-// 5. YENÝ EKLENDÝ: SWAGGER SERVÝSLERÝ
-// API Explorer'ý (API Keþfi) etkinleþtirir
+// 5. Swagger Servisleri
 builder.Services.AddEndpointsApiExplorer();
-// SwaggerGen servisini (JSON üreteci) ekler
 builder.Services.AddSwaggerGen();
 
 
@@ -44,31 +83,34 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 
-// YENÝ EKLENDÝ: SWAGGER UI ARAYÜZÜ
-// Swagger'ý SADECE "Development" (Geliþtirme) modunda çalýþtýrýyoruz.
+// Swagger Ayarlarý
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        // Swagger arayüzünün hangi JSON dosyasýný kullanacaðýný belirtir
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "EtutArkadasim API V1");
-        // /swagger adresini /api-docs olarak deðiþtirebilirsiniz (isteðe baðlý)
-        // options.RoutePrefix = "api-docs"; 
     });
 }
 
-// Geri kalan Hata Yönetimi (Bu zaten vardý)
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
+    // app.UseHsts(); // HTTP kullanacaðýmýz için bunu kapalý tutabiliriz
 }
 
-app.UseHttpsRedirection();
+// --- ÖNEMLÝ DEÐÝÞÝKLÝK: Emülatörde 5258 portuna (HTTP) baðlanabilmek için ---
+// --- HTTPS yönlendirmesini GEÇÝCÝ OLARAK kapatýyoruz. ---
+// app.UseHttpsRedirection(); 
+// --------------------------------------------------------------------------
+
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// --- EKLENDÝ: CORS MIDDLEWARE (UseRouting'den HEMEN SONRA) ---
+app.UseCors("AllowAll");
+// -------------------------------------------------------------
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -77,7 +119,6 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// ÖNEMLÝ: API Controller'larýn da çalýþmasý için bu gereklidir
 app.MapControllers();
 
 app.Run();

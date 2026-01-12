@@ -1,113 +1,133 @@
-﻿@* Controller'dan 'List<User>' modelini yolladığımız için, modelimizi burada tanımlıyoruz *@
-@model List<EtutArkadasim.Web.Models.User>
+﻿@using EtutArkadasim.Web.Models
+@model EtutArkadasim.Web.ViewModels.DiscoverViewModel
 @{
-    ViewData["Title"] = "Arkadaş Bul";
+    ViewData["Title"] = "Çalışma Arkadaşı Keşfet";
 }
 
-<div class="container">
+<div class="container py-4">
     <div class="text-center mb-4">
-        <h2><i class="bi bi-people-fill"></i> @ViewData["Title"]</h2>
-        <p class="lead">Platformdaki diğer mühendislik öğrencilerini bulun.</p>
+        <h2 class="fw-bold"><i class="bi bi-search text-primary"></i> @ViewData["Title"]</h2>
+        <p class="text-muted">Seninle aynı dersleri alan çalışma arkadaşlarını bul.</p>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success d-inline-block px-4 shadow-sm rounded-pill">
+                <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger d-inline-block px-4 shadow-sm rounded-pill">
+                <i class="bi bi-exclamation-circle-fill me-2"></i>@TempData["ErrorMessage"]
+            </div>
+        }
     </div>
 
-    <!-- Kullanıcı Kartları -->
     <div class="row">
-        @if (!Model.Any())
+        @if (Model == null || Model.Users == null || !Model.Users.Any())
         {
-            <div class="col-12">
-                <div class="alert alert-info text-center" role="alert">
-                    Görünüşe göre platformda sizden başka kimse yok.
+            <div class="col-12 text-center py-5">
+                <div class="alert alert-light shadow-sm rounded-4 border-0">
+                    <i class="bi bi-person-dash display-1 text-muted opacity-50"></i>
+                    <p class="mt-3 fs-5 fw-bold">Henüz görüntülenecek kullanıcı bulunamadı.</p>
                 </div>
             </div>
         }
         else
         {
-            @foreach (var user in Model)
+            @foreach (var match in Model.Users)
             {
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body text-center">
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 hover-shadow transition-all">
+                        <div class="card-body p-4 text-center">
 
-                            <!-- GÜNCELLENDİ (Req 4): Profil Fotoğrafı -->
-                            <img src="@(string.IsNullOrEmpty(user.ProfileImageUrl) ? $"https://placehold.co/100x100/663399/FFFFFF?text={user.Name.Substring(0, 1)}" : user.ProfileImageUrl)"
-                                 class="rounded-circle mb-3"
-                                 alt="@user.Name"
-                                 style="width:100px; height:100px; object-fit: cover;"
-                                 onerror="this.src='https://placehold.co/100x100/663399/FFFFFF?text=?'">
+                            <div class="position-relative d-inline-block mb-3">
+                                @{
+                                    string displayName = !string.IsNullOrEmpty(match.User.Name) ? match.User.Name : "İsimsiz Kullanıcı";
+                                    string userInitials = !string.IsNullOrEmpty(match.User.Name) ? match.User.Name.Substring(0, 1).ToUpper() : "?";
+                                    string placeholderUrl = $"https://placehold.co/120x120/663399/FFFFFF?text={userInitials}";
+                                    string finalImageUrl = string.IsNullOrEmpty(match.User.ProfileImageUrl) ? placeholderUrl : match.User.ProfileImageUrl;
+                                }
+                                <img src="@finalImageUrl" class="rounded-circle border border-3 border-white shadow-sm" style="width:110px; height:110px; object-fit: cover;" onerror="this.src='https://placehold.co/120x120/663399/FFFFFF?text=?'">
+                            </div>
+                            <h5 class="fw-bold mb-1">@displayName</h5>
+                            <p class="text-primary small fw-bold mb-3"><i class="bi bi-mortarboard-fill me-1"></i> @match.DepartmentName</p>
 
-                            <h5 class="card-title">@user.Name</h5>
-                            <p class="card-text text-muted">
-                                <i class="bi bi-star-fill text-warning"></i>
-                                @user.AverageRating.ToString("F1") / 5.0
-                            </p>
-
-                            <button class="btn btn-primary"
-                                    data-receiver-id="@user.Id"
-                                    data-receiver-name="@user.Name"
-                                    onclick="sendRequest(this)">
-                                <i class="bi bi-person-check"></i> Talep Gönder
-                            </button>
-                            <div class="form-text mt-2" id="request-message-@user.Id" style="display:none;"></div>
+                            <div class="bg-light rounded-3 p-3 mb-3 text-start">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div class="text-danger me-2"><i class="bi bi-geo-alt-fill"></i></div>
+                                    <div>
+                                        <small class="text-muted d-block" style="font-size: 0.75rem;">Konum</small>
+                                        <span class="fw-bold text-dark" style="font-size: 0.9rem;">
+                                            @if (!string.IsNullOrEmpty(match.User.City))
+                                            {
+                                                @match.User.City @if(!string.IsNullOrEmpty(match.User.District)) {
+                                                <span>/ @match.User.District</span>
+                                            }
+     } else
+    {
+                                            <span class="text-muted fst-italic">Belirtilmemiş</span>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="text-warning me-2"><i class="bi bi-shop"></i></div>
+                                <div>
+                                    <small class="text-muted d-block" style="font-size: 0.75rem;">Tercih Ettiği Yer</small>
+                                    <span class="fw-bold text-dark" style="font-size: 0.9rem;">
+                                        @(string.IsNullOrEmpty(match.User.PreferredLocationsText) ? "Fark etmez" : match.User.PreferredLocationsText)
+                                    </span>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="mt-auto">
+                            <form asp-controller="Requests" asp-action="SendRequest" method="post">
+
+                                <input type="hidden" name="receiverId" value="@match.User.Id" />
+
+                                <div class="mb-2 text-start">
+                                    <label class="small fw-bold mb-1 text-muted">Ortak Dersler (@match.CommonCoursesCount):</label>
+
+                                    <select name="courseId" class="form-select form-select-sm rounded-3" required>
+                                        @if (match.CommonCourses != null && match.CommonCourses.Any())
+                                        {
+                                            <option value="">Bir ders seçin...</option>
+                                            foreach (var course in match.CommonCourses)
+                                            {
+                                                <option value="@course.Id">@course.CourseName</option>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <option value="" disabled selected>Ortak ders yok</option>
+                                        }
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-sm"
+                                        @(match.CommonCoursesCount == 0 ? "disabled" : "")>
+                                    <i class="bi bi-send-plus-fill me-1"></i> Talep Gönder
+                                </button>
+                            </form>
+                        </div>
+
                     </div>
                 </div>
-            }
+            </div>
         }
-        }
-    </div>
-
-@section Scripts {
-        <script>
-            // KULLANICIYA TALEP GÖNDER
-            // API Endpoint: [POST] /api/request/send/{receiverId}
-            async function sendRequest(buttonElement) {
-                const receiverId = buttonElement.dataset.receiverId;
-                const receiverName = buttonElement.dataset.receiverName;
-                const messageDiv = document.getElementById(`request-message-${receiverId}`);
-
-                // Butonu geçici olarak devre dışı bırak
-                buttonElement.disabled = true;
-                buttonElement.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Gönderiliyor...';
-
-                try {
-                    // 1. API'ya POST isteği at
-                    const response = await fetch(`/api/request/send/${receiverId}`, {
-                        method: 'POST',
-                        headers: {
-                            // AntiForgeryToken (CSRF) koruması
-                            // API'miz [Authorize] ile korunduğu için şimdilik güvende
-                        }
-                    });
-
-                    // 2. API'dan dönen JSON yanıtını al
-                    const result = await response.json();
-
-                    if (!response.ok) {
-                        // API 400 (BadRequest) veya 404 (NotFound) döndürdüyse
-                        throw new Error(result.message || 'Bir hata oluştu.');
-                    }
-
-                    // 3. Başarılı ise
-                    buttonElement.innerHTML = '<i class="bi bi-check-lg"></i> Talep Gönderildi';
-                    buttonElement.classList.remove('btn-primary');
-                    buttonElement.classList.add('btn-success');
-
-                    messageDiv.textContent = result.message; // "Arkadaşlık talebi başarıyla gönderildi."
-                    messageDiv.className = 'form-text mt-2 text-success';
-                    messageDiv.style.display = 'block';
-
-                } catch (error) {
-                    // 4. Hata oluşursa
-                    console.error('Talep gönderilirken hata:', error);
-
-                    // Butonu eski haline getir
-                    buttonElement.disabled = false;
-                    buttonElement.innerHTML = '<i class="bi bi-person-check"></i> Talep Gönder';
-
-                    messageDiv.textContent = error.message; // API'dan gelen hata mesajı (örn: "Zaten beklemede...")
-                    messageDiv.className = 'form-text mt-2 text-danger';
-                    messageDiv.style.display = 'block';
                 }
-            }
-        </script>
-}
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+</style>

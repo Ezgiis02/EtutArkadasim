@@ -3,53 +3,47 @@
     ViewData["Title"] = "Giriş Yap";
 }
 
-<h2>@ViewData["Title"]</h2>
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h2 class="text-center mb-4">@ViewData["Title"]</h2>
 
-<div class="row">
-    <div class="col-md-6">
-        <section>
-            <form asp-action="Login" method="post">
-                <h4>Oturum açmak için bilgilerinizi girin.</h4>
-                <hr />
+                    <form asp-action="Login" method="post">
+                        <h4 class="text-center mb-3">Oturum açmak için bilgilerinizi girin.</h4>
 
-                <!-- Kayıt başarılıysa, TempData'daki mesajı burada göster -->
-                @if (TempData["SuccessMessage"] != null)
-                {
-                    <div class="alert alert-success" role="alert">
-                        @TempData["SuccessMessage"]
-                    </div>
-                }
+                        <!-- Genel Hata Mesajı (örn: "Geçersiz e-posta veya şifre") -->
+                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 
-                <!-- Genel Hata Mesajı (örn: "Geçersiz e-posta veya şifre") -->
-                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                        <!-- E-posta Alanı -->
+                        <div class="form-floating mb-3">
+                            <input asp-for="Email" class="form-control" placeholder="eposta@adres.com" />
+                            <label asp-for="Email"></label>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
 
-                <!-- E-posta Alanı -->
-                <div class="form-floating mb-3">
-                    <input asp-for="Email" class="form-control" placeholder="eposta@adres.com" />
-                    <label asp-for="Email"></label>
-                    <span asp-validation-for="Email" class="text-danger"></span>
+                        <!-- Şifre Alanı -->
+                        <div class="form-floating mb-3">
+                            <input asp-for="Password" class="form-control" type="password" placeholder="Şifre" />
+                            <label asp-for="Password"></label>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <!-- Giriş Yap Butonu -->
+                        <div class="mb-3">
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Giriş Yap</button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Hesabınız yok mu? <a asp-action="Register">Kayıt Olun</a>.
+                            </p>
+                        </div>
+                    </form>
                 </div>
-
-                <!-- Şifre Alanı -->
-                <div class="form-floating mb-3">
-                    <input asp-for="Password" class="form-control" type="password" placeholder="Şifre" />
-                    <label asp-for="Password"></label>
-                    <span asp-validation-for="Password" class="text-danger"></span>
-                </div>
-
-                <!-- (İsteğe bağlı: "Beni Hatırla?" Checkbox'ı) -->
-                <!-- Giriş Yap Butonu -->
-                <div class="mb-3">
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Giriş Yap</button>
-                </div>
-
-                <div class="text-center">
-                    <p>
-                        Hesabınız yok mu? <a asp-action="Register">Kayıt Olun</a>.
-                    </p>
-                </div>
-            </form>
-        </section>
+            </div>
+        </div>
     </div>
 </div>
 

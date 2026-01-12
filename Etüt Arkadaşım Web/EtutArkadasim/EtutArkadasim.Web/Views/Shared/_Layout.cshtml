@@ -14,63 +14,56 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
-                    <i class="bi bi-mortarboard-fill text-primary"></i>
-                    Etüt Arkadaşım
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom shadow-sm py-3 mb-4">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-mortarboard-fill text-primary fs-3 me-2"></i>
+                    <span class="fw-bold text-dark">Etüt Arkadaşım</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
-                <!-- GÜNCELLENDİ (Req 1 & 2): Navbar düzeni değişti -->
-                <div class="navbar-collapse collapse">
-
-                    <!-- Ana Linkler (Ortada) -->
-                    <ul class="navbar-nav mx-auto">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">
-                                <i class="bi bi-house-door"></i> Ana Sayfa
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Discover" asp-action="Index">
-                                <i class="bi bi-search"></i> Arkadaş Bul
-                            </a>
-                        </li>
-                    </ul>
-
-                    <!-- Kullanıcı Linkleri (En Sağda) -->
-                    <ul class="navbar-nav">
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between" id="navbarMain">
+                    <ul class="navbar-nav flex-grow-1 justify-content-center">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
-                            // Kullanıcı GİRİŞ YAPMIŞSA
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Profile">
-                                    <i class="bi bi-person-gear"></i> Profilim
+                                <a class="nav-link text-dark px-3 fw-medium" asp-controller="Home" asp-action="Dashboard">
+                                    <i class="bi bi-house-door me-1"></i> Dashboard
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">
-                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                <a class="nav-link text-dark px-3 fw-medium" asp-controller="Discover" asp-action="Index">
+                                    <i class="bi bi-search me-1"></i> Arkadaş Bul
                                 </a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav align-items-center">
+                        @if (User.Identity != null && User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-primary fw-bold" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-person-circle"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="bi bi-gear me-2"></i>Ayarlar</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" asp-controller="Account" asp-action="Logout"><i class="bi bi-box-arrow-right me-2"></i>Çıkış Yap</a></li>
+                                </ul>
                             </li>
                         }
                         else
                         {
-                            // Kullanıcı GİRİŞ YAPMAMIŞSA
                             <li class="nav-item">
-                                <a class="nav-link text-dark me-2" asp-area="" asp-controller="Account" asp-action="Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
-                                </a>
+                                <a class="nav-link text-dark fw-medium px-3" asp-controller="Account" asp-action="Login">Giriş Yap</a>
                             </li>
-                            <li class="nav-item">
-                                <!-- GÜNCELLENDİ (Req 3): Kayıt Ol -> Buton oldu -->
-                                <a class="btn btn-outline-primary" asp-area="" asp-controller="Account" asp-action="Register">
-                                    <i class="bi bi-person-plus"></i> Kayıt Ol
+                            <li class="nav-item ms-lg-2">
+                                <a class="btn btn-primary rounded-pill px-4 shadow-sm fw-bold" asp-controller="Account" asp-action="Register">
+                                    Kayıt Ol
                                 </a>
                             </li>
                         }

@@ -14,6 +14,10 @@ namespace EtutArkadasim.Web.ViewModels
         [Display(Name = "E-posta")]
         public string Email { get; set; } = string.Empty;
 
+        
+        [Display(Name = "Bölüm")]
+        public string? DepartmentId { get; set; }
+
         [Required(ErrorMessage = "Şifre alanı zorunludur.")]
         [DataType(DataType.Password)]
         [MinLength(6, ErrorMessage = "Şifreniz en az 6 karakter olmalıdır.")]

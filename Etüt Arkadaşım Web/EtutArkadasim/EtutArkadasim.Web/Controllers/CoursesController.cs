@@ -1,127 +1,111 @@
-﻿using EtutArkadasim.Models;
-using EtutArkadasim.Web.Models;
-using Microsoft.AspNetCore.Authorization; // [Authorize] için
+﻿using EtutArkadasim.Web.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MongoDB.Driver;
-using System.Security.Claims; // ClaimTypes için gerekli
+using System.Collections.Generic;
+using System.Security.Claims; // Cookie için gerekli
+using System.Threading.Tasks;
 
-// Bu attributelar, bu sınıfın bir API Controller olduğunu ve 
-// varsayılan rotasının "api/Courses" olacağını belirtir.
-[Route("api/[controller]")]
-[ApiController]
-[Authorize] // Bu API'daki tüm metodlara sadece giriş yapmış kullanıcılar erişebilir
-public class CoursesController : ControllerBase // MVC için 'Controller' yerine 'ControllerBase' kullanırız
+namespace EtutArkadasim.Web.Controllers.Api
 {
-    private readonly IMongoDatabase _database;
-    private readonly IMongoCollection<Course> _coursesCollection;
-    // YENİ EKLENDİ: Kullanıcı koleksiyonuna da ihtiyacımız var
-    private readonly IMongoCollection<User> _usersCollection;
-
-    public CoursesController(IMongoDatabase database)
+    [Route("api/[controller]")]
+    [ApiController]
+    [AllowAnonymous] // Kapıyı herkese açıyoruz, içeride kimlik kontrolü yapacağız
+    public class CoursesController : ControllerBase
     {
-        _database = database;
-        _coursesCollection = _database.GetCollection<Course>("courses");
-        // YENİ EKLENDİ: Users koleksiyonunu da tanımla
-        _usersCollection = _database.GetCollection<User>("users");
-    }
+        private readonly IMongoDatabase _database;
+        private readonly IMongoCollection<Course> _coursesCollection;
+        private readonly IMongoCollection<User> _usersCollection;
 
-    // --- GEÇİCİ YARDIMCI METOT: VERİTABANINA ÖRNEK DERS EKLEME ---
-    // Bu metodu API'mizi test etmek için bir kerelik kullanmıştık.
-    [HttpGet("addsamples")] // Rota: /api/courses/addsamples
-    public async Task<IActionResult> AddSampleCourses()
-    {
-        // Sadece veritabanında hiç ders yoksa ekle
-        var count = await _coursesCollection.CountDocumentsAsync(_ => true);
-        if (count > 0)
+        public CoursesController(IMongoDatabase database)
         {
-            return BadRequest("Örnek dersler zaten mevcut.");
+            _database = database;
+            _coursesCollection = _database.GetCollection<Course>("courses");
+            _usersCollection = _database.GetCollection<User>("users");
         }
 
-        var newCourses = new List<Course>
+        // --- YARDIMCI METOD: ID BULUCU ---
+        // Bu metod, isteğin Web'den mi yoksa Mobilden mi geldiğine bakıp doğru ID'yi verir.
+        private string? GetEffectiveUserId(string? queryUserId)
         {
-            new Course { CourseName = "Veri Yapıları", Department = "Bilgisayar Müh.", CourseCode = "CENG201" },
-            new Course { CourseName = "Diferansiyel Denklemler", Department = "Makine Müh.", CourseCode = "MATH202" },
-            new Course { CourseName = "Termodinamik", Department = "Kimya Müh.", CourseCode = "CHEM301" },
-            new Course { CourseName = "Devre Analizi", Department = "Elektrik-Elektronik Müh.", CourseCode = "EE201" }
-        };
+            // 1. Önce Cookie'ye bak (Web için)
+            var cookieUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(cookieUserId))
+            {
+                return cookieUserId;
+            }
 
-        await _coursesCollection.InsertManyAsync(newCourses);
-        return Ok("4 adet örnek ders eklendi.");
-    }
+            // 2. Cookie yoksa Parametreye bak (Mobil için)
+            if (!string.IsNullOrEmpty(queryUserId))
+            {
+                return queryUserId;
+            }
 
-    // --- API ENDPOINT 1: TÜM DERSLERİ GETİR ---
-    // Profil sayfasında "Ders Ekle" listesini doldurmak için bunu kullanacağız.
-    [HttpGet("getall")] // Rota: /api/courses/getall
-    public async Task<IActionResult> GetAllCourses()
-    {
-        // Tüm dersleri bul ve listele
-        var courses = await _coursesCollection.Find(_ => true).ToListAsync();
-
-        // Ok() metodu, 'courses' listesini otomatik olarak JSON formatına çevirir
-        return Ok(courses);
-    }
-
-    // --- API ENDPOINT 2: KULLANICININ SEÇTİĞİ DERSLERİ GETİR ---
-    // Bu, Adım 3.2'de eklediğimiz YENİ metottur
-    [HttpGet("getmycourses")] // Rota: /api/courses/getmycourses
-    public async Task<IActionResult> GetMyCourses()
-    {
-        // Önce giriş yapan kullanıcının kimliğini (Id) al
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(currentUserId))
-        {
-            return Unauthorized();
+            // 3. İkisi de yoksa kimliksizdir
+            return null;
         }
 
-        // Kullanıcıyı veritabanından bul
-        var user = await _usersCollection.Find(u => u.Id == currentUserId).FirstOrDefaultAsync();
-        if (user == null || !user.SelectedCourseIds.Any())
+        // --- 1. TÜM DERSLERİ GETİR ---
+        [HttpGet("getall")]
+        public async Task<IActionResult> GetAllCourses()
         {
-            // Kullanıcı yoksa veya hiç ders seçmemişse boş liste döndür
-            return Ok(new List<Course>());
+            // Herkes görebilir
+            var courses = await _coursesCollection.Find(_ => true)
+                .SortBy(c => c.Department)
+                .ThenBy(c => c.CourseName)
+                .ToListAsync();
+            return Ok(courses);
         }
 
-        // Kullanıcının seçtiği derslerin ID'leri ile (SelectedCourseIds)
-        // 'courses' koleksiyonundan eşleşen dersleri bul
-        var filter = Builders<Course>.Filter.In(c => c.Id, user.SelectedCourseIds);
-        var myCourses = await _coursesCollection.Find(filter).ToListAsync();
-
-        return Ok(myCourses);
-    }
-
-    // --- API ENDPOINT 3: KULLANICIYA DERS EKLE ---
-    // Bu, Adım 3.2'de eklediğimiz diğer YENİ metottur
-    [HttpPost("add/{courseId}")] // Rota: /api/courses/add/{dersin_id_si}
-    public async Task<IActionResult> AddCourse(string courseId)
-    {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(currentUserId))
+        // --- 2. BENİM DERSLERİMİ GETİR ---
+        [HttpGet("getmycourses")]
+        public async Task<IActionResult> GetMyCourses([FromQuery] string? userId)
         {
-            return Unauthorized();
+            // Hem Cookie'yi hem URL parametresini kontrol et
+            var effectiveId = GetEffectiveUserId(userId);
+
+            if (string.IsNullOrEmpty(effectiveId)) return Unauthorized(new { message = "Giriş yapmalısınız." });
+
+            var user = await _usersCollection.Find(u => u.Id == effectiveId).FirstOrDefaultAsync();
+
+            if (user == null || user.SelectedCourseIds == null || !user.SelectedCourseIds.Any())
+            {
+                return Ok(new List<Course>());
+            }
+
+            var filter = Builders<Course>.Filter.In(c => c.Id, user.SelectedCourseIds);
+            var myCourses = await _coursesCollection.Find(filter).ToListAsync();
+            return Ok(myCourses);
         }
 
-        // Dersin geçerli olup olmadığını kontrol et (isteğe bağlı ama iyi bir pratik)
-        var courseExists = await _coursesCollection.Find(c => c.Id == courseId).AnyAsync();
-        if (!courseExists)
+        // --- 3. DERS EKLE ---
+        [HttpPost("add/{courseId}")]
+        public async Task<IActionResult> AddCourse(string courseId, [FromQuery] string? userId)
         {
-            return NotFound("Ders bulunamadı.");
+            var effectiveId = GetEffectiveUserId(userId);
+            if (string.IsNullOrEmpty(effectiveId)) return Unauthorized();
+
+            // Ders var mı kontrolü
+            var courseExists = await _coursesCollection.Find(c => c.Id == courseId).AnyAsync();
+            if (!courseExists) return NotFound(new { message = "Ders bulunamadı." });
+
+            var update = Builders<User>.Update.AddToSet(u => u.SelectedCourseIds, courseId);
+            await _usersCollection.UpdateOneAsync(u => u.Id == effectiveId, update);
+
+            return Ok(new { message = "Ders eklendi." });
         }
 
-        // Kullanıcının 'selectedCourseIds' dizisine bu 'courseId'yi ekle
-        // $addToSet: Eğer Id zaten listede varsa, tekrar eklemez.
-        var filter = Builders<User>.Filter.Eq(u => u.Id, currentUserId);
-        var update = Builders<User>.Update.AddToSet(u => u.SelectedCourseIds, courseId);
-
-        var result = await _usersCollection.UpdateOneAsync(filter, update);
-
-        if (result.ModifiedCount > 0)
+        // --- 4. DERS SİL ---
+        [HttpDelete("remove/{courseId}")]
+        public async Task<IActionResult> RemoveCourse(string courseId, [FromQuery] string? userId)
         {
-            return Ok(new { message = "Ders başarıyla eklendi." });
-        }
-        else
-        {
-            // ModifiedCount 0 ise, ders zaten listedeydi.
-            return Ok(new { message = "Ders zaten seçili." });
+            var effectiveId = GetEffectiveUserId(userId);
+            if (string.IsNullOrEmpty(effectiveId)) return Unauthorized();
+
+            var update = Builders<User>.Update.Pull(u => u.SelectedCourseIds, courseId);
+            await _usersCollection.UpdateOneAsync(u => u.Id == effectiveId, update);
+
+            return Ok(new { message = "Ders silindi." });
         }
     }
 }
